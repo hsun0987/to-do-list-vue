@@ -3,8 +3,8 @@
         <h1>todo-list</h1>
         <form id="form">
         <input @keydown.enter.prevent="add(submit)" type="text" class="input" id="input" v-model="submit" placeholder="Enter your todo" autocomplete="off">
-            <ul class="todos" id="todos" v-for="(todo, i) in todos" :key="todo">
-                <li @click="done(todo)" @contextmenu.prevent="remove(i)" :class="todo.completed">{{ todo.content }}</li>
+            <ul class="todos" id="todos">
+                <li @click="finish(todo)" @contextmenu.prevent="deleteTodo(todo)" v-for="todo in todos" :key="todo" :id="todo.id" :class="todo.done? 'completed' : ''" >{{ todo.content }}</li>
             </ul>
         </form>
         <small>왼쪽 클릭: 항목 완료 <br> 오른쪽 클릭: 해당 항목 삭제</small>        
@@ -15,26 +15,49 @@
     data() {
         return {
             submit : null,
-            todos : [
-                { content : "코딩테스트", completed : ""},
-                { content : "vue 공부", completed : "completed"}
-            ]
+            todos : [ ],
         }
     },
     methods : {
         add(submit){
-            this.todos.push({content: submit, completed : ""});
+            this.axios
+            .post('/api/todos/', {
+                content: submit, 
+                done : false
+            })
+            .then(function (response) {
+            console.log(response);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+            this.submit = "";
+            this.list();
         },
-        done(todo){
-            if(todo.completed == ""){
-                todo.completed = "completed";
-            }
-            else
-                todo.completed = "";
+        finish(todo){
+            this.axios
+            .put(`/api/todos/` + todo.id);
+            this.list();
         },
-        remove(i){
-            this.todos.splice(i, 1);
+        deleteTodo(todo){
+            this.axios
+            .delete(`/api/todos/` + todo.id);
+            this.list();
+        },
+        list(){
+            this.axios        
+            .get(`/api/todos/`)
+            .then((res) => {
+                console.log(res.data);
+                this.todos = res.data;
+            })        
+            .catch((res) => {          
+                console.error(res);        
+            });
         }
+    },
+    mounted() {
+        this.list()
     }
 }
 </script>
