@@ -19,31 +19,6 @@
         }
     },
     methods : {
-        add(submit){
-            this.axios
-            .post('/api/todos/', {
-                content: submit, 
-                done : false
-            })
-            .then(function (response) {
-            console.log(response);
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-            this.submit = "";
-            this.list();
-        },
-        finish(todo){
-            this.axios
-            .put(`/api/todos/` + todo.id);
-            this.list();
-        },
-        deleteTodo(todo){
-            this.axios
-            .delete(`/api/todos/` + todo.id);
-            this.list();
-        },
         list(){
             this.axios        
             .get(`/api/todos/`)
@@ -54,7 +29,32 @@
             .catch((res) => {          
                 console.error(res);        
             });
-        }
+        },
+        add(submit){
+            this.axios
+            .post('/api/todos/', {
+                content: submit, 
+                done : false
+            })
+            .then((response) => {
+                console.log(response.data);
+                this.todos = response.data;
+            })
+            .catch((error) =>{
+                console.log(error);
+            });
+            this.submit = "";
+        },
+        finish(todo){
+            this.axios
+            .put(`/api/todos/` + todo.id);
+            todo.done = !todo.done;
+        },
+        deleteTodo(todo){
+            this.axios
+            .delete(`/api/todos/` + todo.id);
+            this.todos.splice(this.todos.indexOf(todo), 1);
+        },
     },
     mounted() {
         this.list()
